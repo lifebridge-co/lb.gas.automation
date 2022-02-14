@@ -19,7 +19,7 @@
  *
  * You will need to allow this script to access the sheet and the Gooogle Calendar service.
  *
- * @version v0.0.2
+ * @version v0.0.3
  * @license Reserved
  * This script is to used by the person or organization the author acknowledges to do so.
  * 2022-02-12
@@ -31,6 +31,7 @@ import { SheetInterpreter } from "./SheetInterpreter";
 declare const exports: typeof import('./CalendarService') & typeof import('./SheetInterpreter');
 exports.CalendarService;
 exports.SheetInterpreter;
+
 // set your sheet id here
 const SHEET_ID = "1zYdz1_vGapDEvQxfM-AB3IBMZbcPDwuakfeKdYI4n7k";
 const TERM_TABLE = {
@@ -47,12 +48,16 @@ const main = () => {
   sheetInterpreter.getCalendarNamesInSheet().map(calName => {
     try {
       const cal = calendarService.createCalendarWithName(calName);
-      const rolesInSheet = sheetInterpreter.getRoleTable().calName;
-      rolesInSheet.map(role => {
-        calendarService.createAclRule(cal.getId(), role.mail, role.role);
+      Logger.log("@main calender: %s", cal.getName());
+      const givenRules = sheetInterpreter.getRuleTable();
+      Logger.log("@main givenRules: %s",{ givenRules });
+
+      givenRules[calName]?.map(rule => {
+        const result = calendarService.createAclRule(cal, rule.mail, rule.role);
+        Logger.log("@main: new rule inserted. %s", { result });
       });
     } catch (err) {
-      Logger.log(err);
+      Logger.log("Error caught @main :%s", { err });
     }
   });
 };
