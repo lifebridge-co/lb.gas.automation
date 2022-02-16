@@ -1,10 +1,10 @@
+import { Log } from './Log';
 import { CreationError, FetchError } from './Error';
 import { role } from './common';
-import { Log } from './Log';
 declare const exports: typeof import('./Error') & typeof import('./common') & typeof import('./Log');
-exports.FetchError;
-exports.CreationError;
 exports.Log;
+exports.CreationError;
+exports.FetchError;
 type Calendar = GoogleAppsScript.Calendar.Calendar;
 type AclRule = GoogleAppsScript.Calendar.Schema.AclRule;
 type CalendarWithRules = Calendar & { rules: AclRule[], name: string, id: string, toString: () => string; };

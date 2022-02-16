@@ -31,15 +31,15 @@ import { CalendarService } from "./CalendarService";
 import { SheetInterpreter } from "./SheetInterpreter";
 import { Log } from './Log';
 declare const exports: typeof import('./CalendarService') & typeof import('./SheetInterpreter') & typeof import('./Log');
-exports.CalendarService;
+exports.Log; // Be careful about the order of the `exports` statement.
+exports.CalendarService; // `CalenderService` uses Log class; this must be after `exports.Log` statement.
 exports.SheetInterpreter;
-exports.Log;
 
 
 const main = () => {
+  const logs = new Log();
   const sheetInterpreter = new SheetInterpreter(env.SHEET_ID, env.TERM_TABLE);
   const calendarService = new CalendarService();
-  const logs = new Log();
   sheetInterpreter.getCalendarNamesInSheet().forEach(calName => {
     try {
       const cal = calendarService.getOrCreateCalendarByName(calName);
