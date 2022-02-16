@@ -22,7 +22,7 @@ type CalendarWithRules = Calendar & { rules: AclRule[], name: string, id: string
 export class CalendarService {
   private count = 0;
   private calendars: CalendarWithRules[];
-  private calendarToString = (name: string, id: string, ruleCnt: number) => (`"calendar": { "name": "${name}", "id": "${id}" } with ${ruleCnt}rules.`);
+  private calendarToString = (name: string, id: string, ruleCnt: number) => (()=>`"calendar": { "name": "${name}", "id": "${id}" } with ${ruleCnt}rules.`);
   constructor() {
     try {
       this.count++;
@@ -37,7 +37,7 @@ export class CalendarService {
             rules: aclItems,
             name: calName,
             id: calId,
-            toString: this.calendarToString
+            toString: this.calendarToString(calName, calId, aclItems.length)
           }
         );
       });
@@ -131,7 +131,7 @@ export class CalendarService {
             rules: [] as AclRule[],
             name: _newCalendar.getName(),
             id: _newCalendar.getId(),
-            toString: this.calendarToString
+            toString: this.calendarToString(_newCalendar.getName(), _newCalendar.getId(), 0)
           }
         );
         this.calendars.push(newCalendar);
