@@ -51,7 +51,7 @@ export class SheetInterpreter {
       });
       return acc;
     });
-    Logger.log("A new instance of SheetInterpreter is created. ruleTable: %s, calendarNamesInSheet: %s", JSON.stringify(this.table), JSON.stringify(this.calendarNamesInSheet));
+    Logger.log("[Info] A new instance of SheetInterpreter is created. ruleTable: %s, calendarNamesInSheet: %s", JSON.stringify(this.table), JSON.stringify(this.calendarNamesInSheet));
   }
 
   /**
