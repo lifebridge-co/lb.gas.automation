@@ -1,11 +1,15 @@
 import type { role } from './common';
 import { ParameterError, FetchError } from './Error';
-declare const exports: typeof import('./Error') & typeof import('./common');
+import { Log } from './Log';
+declare const exports: typeof import('./Error') & typeof import('./common') & typeof import('./Log');
 exports.FetchError;
 exports.ParameterError;
+exports.Log;
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
+const ROLE_LIST: role[] = ["none", "freeBusyReader", "reader", "writer", "owner"];
 
-const ROLE_LIST:role[] = ["none", "freeBusyReader", "reader", "writer", "owner"];
+const logs = new Log();
+
 /**
  * A type that represents the data structure of the role table.
  * @typedef {{[calsenderName: string]:{ mail: string, role: role; }[]}}
@@ -51,7 +55,7 @@ export class SheetInterpreter {
       });
       return acc;
     });
-    Logger.log("[Info] A new instance of SheetInterpreter is created. ruleTable: %s, calendarNamesInSheet: %s", JSON.stringify(this.table), JSON.stringify(this.calendarNamesInSheet));
+    logs.log("[Info] A new instance of SheetInterpreter is created. ruleTable: %s, calendarNamesInSheet: %s", JSON.stringify(this.table), JSON.stringify(this.calendarNamesInSheet));
   }
 
   /**

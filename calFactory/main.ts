@@ -17,7 +17,7 @@
  * - "RW"
  * - "RWS"
  *
- * You will need to allow this script to access the sheet and the Gooogle Calendar service.
+ * Set any options at `env.ts` file.
  *
  * @version v0.0.3
  * @license Reserved
@@ -26,38 +26,33 @@
  * @author Yoshinori Yokoyama (https://github.com/nominalrune)
  */
 
+/// <reference path='./env.ts'>
 import { CalendarService } from "./CalendarService";
 import { SheetInterpreter } from "./SheetInterpreter";
-declare const exports: typeof import('./CalendarService') & typeof import('./SheetInterpreter');
+import { Log } from './Log';
+declare const exports: typeof import('./CalendarService') & typeof import('./SheetInterpreter') & typeof import('./Log');
 exports.CalendarService;
 exports.SheetInterpreter;
+exports.Log;
 
-// set your sheet id here
-const SHEET_ID = "1zYdz1_vGapDEvQxfM-AB3IBMZbcPDwuakfeKdYI4n7k";
-const TERM_TABLE = {
-  "-": "none",
-  "r": "freeBusyReader",
-  "R": "reader",
-  "RW": "writer",
-  "RWS": "owner"
-} as const;
 
 const main = () => {
-  const sheetInterpreter = new SheetInterpreter(SHEET_ID, TERM_TABLE);
+  const sheetInterpreter = new SheetInterpreter(env.SHEET_ID, env.TERM_TABLE);
   const calendarService = new CalendarService();
+  const logs = new Log();
   sheetInterpreter.getCalendarNamesInSheet().forEach(calName => {
     try {
       const cal = calendarService.getOrCreateCalendarByName(calName);
-      Logger.log("@main calender: %s (%s)", calName,cal.getName());
+      logs.log("@main calender: %s (%s)", calName, cal.getName());
       const givenRules = sheetInterpreter.getRuleTable();
-      Logger.log("@main givenRules: %s",{ givenRules });
+      logs.log("@main givenRules: %s", { givenRules });
 
       givenRules[calName]?.forEach(rule => {
         const result = calendarService.createAclRule(cal, rule.mail, rule.role);
-        Logger.log("@main: new rule inserted. %s", { result });
+        logs.log("@main: new rule inserted. %s", { result });
       });
     } catch (err) {
-      Logger.log("Error caught @main :%s", { err });
+      logs.log("Error caught @main :%s", { err });
     }
   });
 };
