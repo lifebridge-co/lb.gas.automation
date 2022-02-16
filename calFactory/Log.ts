@@ -16,6 +16,9 @@ export class Log {
       this.out.log(message, ...targets);
     }
   }
+  message(message: string) {
+    this.out.log(`message: ${message}`);
+  }
   isWarnMessage(message: string) {
     const warnRegex = /warn/gim;
     return warnRegex.test(message);

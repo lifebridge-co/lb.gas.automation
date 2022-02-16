@@ -55,5 +55,6 @@ const main = () => {
       logs.log("Error caught @main :%s", { err });
     }
   });
+  logs.message(`@main: Finished. \n\n------results------\ninput:${sheetInterpreter.getRuleTable()}\n\noutput:${calendarService.getAllCalendars().map(cal => cal.toString()+"\n{ "+cal.rules.map(rule => rule.scope?.value+":"+rule.role).join(","))} }`);
 };
 

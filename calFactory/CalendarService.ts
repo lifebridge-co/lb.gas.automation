@@ -49,6 +49,9 @@ export class CalendarService {
       );
     }
   }
+  getAllCalendars() {
+    return this.calendars;
+  }
   /**
    * Gets the calendar with given id string.
    * @param {string} id - The id of the calendar to be retrieved.
