@@ -88,7 +88,7 @@ export class CalendarService {
     const calendar = (typeof _calendar === "string") ? this.getCalendarById(_calendar) : _calendar;
     const aclItems = calendar.rules;
     if (!aclItems) {
-      Logger.log("[WORNING] Something is wrong. Failed to get the ACL rule of %s. @CalendarService.getAclRule", calendar.name);
+      Logger.log("[WARNING] Something is wrong. Failed to get the ACL rule of %s. @CalendarService.getAclRule", calendar.name);
       return undefined;
     }
     if (aclItems.length === 0) {
