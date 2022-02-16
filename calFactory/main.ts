@@ -42,7 +42,7 @@ const main = () => {
   sheetInterpreter.getCalendarNamesInSheet().forEach(calName => {
     try {
       const cal = calendarService.getOrCreateCalendarByName(calName);
-      Log.message(`@main calender: ${calName} (${cal.getName()})`);
+      Log.message(`@main calender: ${calName}`);
       const givenRules = sheetInterpreter.getRuleTable();
       Log.log("@main givenRules: %s", { givenRules });
 
@@ -50,10 +50,11 @@ const main = () => {
         const result = calendarService.createAclRule(cal, rule.mail, rule.role);
         Log.log("@main: new rule inserted. %s", { result });
       });
+      Log.message(`@main Finished setting: ${calName} (${cal.id})`);
     } catch (err) {
       Log.log("Error caught @main :%s", { err });
     }
   });
-  Log.message(`@main: Finished. \n\n------results------\ninput:${sheetInterpreter.getRuleTable()}\n\noutput:${calendarService.getAllCalendars().map(cal => cal.toString()+"\n{ "+cal.rules.map(rule => rule.scope?.value+":"+rule.role).join(","))} }`);
+  Log.message(`@main: Finished. \n\n------------results------------\ninput:\n${JSON.stringify(sheetInterpreter.getRuleTable())}\n\noutput:\n${calendarService.getAllCalendars().map(cal => cal.toString()+'\n"rules":\n{ '+cal.rules.map(rule => '"'+rule.scope?.value+'"'+":"+'"'+rule.role+'"').join(",")+"}\n")}`);
 };
 

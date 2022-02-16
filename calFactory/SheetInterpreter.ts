@@ -13,7 +13,7 @@ const ROLE_LIST: role[] = ["none", "freeBusyReader", "reader", "writer", "owner"
  * @typedef {{[calsenderName: string]:{ mail: string, role: role; }[]}}
  */
 interface IRuleTable {
-  [calsendarName: string]:
+  [calendarName: string]:
   { mail: string, role: role; }[];
 }
 
