@@ -3,10 +3,9 @@ import { ParameterError, FetchError } from './Error';
 declare const exports: typeof import('./Error') & typeof import('./common');
 exports.FetchError;
 exports.ParameterError;
-
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
-const ROLE_LIST:role[] = ["none", "freeBusyReader", "reader", "writer", "owner"];
 
+const ROLE_LIST:role[] = ["none", "freeBusyReader", "reader", "writer", "owner"];
 /**
  * A type that represents the data structure of the role table.
  * @typedef {{[calsenderName: string]:{ mail: string, role: role; }[]}}
