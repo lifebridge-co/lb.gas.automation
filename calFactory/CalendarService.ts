@@ -92,7 +92,7 @@ export class CalendarService {
     const calendar = (typeof _calendar === "string") ? this.getCalendarById(_calendar) : _calendar;
     const aclItems = calendar.rules;
     if (!aclItems) {
-      Log.log("[Warning] Something is wrong. Failed to get the ACL rule of %s. @CalendarService.getAclRule", calendar.name);
+      Log.log("[Error] Something is wrong. Failed to get the ACL rule of %s. @CalendarService.getAclRule", calendar.name);
       return undefined;
     }
     if (aclItems.length === 0) {
@@ -124,6 +124,7 @@ export class CalendarService {
       Log.log(`[Info] @setNewCalendar; calendar ${calendarName} exists. Skipping...`);
       return existingCal;
     } catch (e) { // If the calendar is not found.
+      this.count++
       const _newCalendar = CalendarApp.createCalendar(calendarName);
       if (!!_newCalendar) {
         const newCalendar = Object.assign(_newCalendar,
@@ -138,7 +139,7 @@ export class CalendarService {
         Log.log("[Info] Success @setNewCalendar; Calendar: %s", newCalendar);
         return newCalendar;
       } else {
-        throw new CreationError(`[Error] Failed to create a new calendar: ${calendarName}`);
+        throw new CreationError(`Failed to create a new calendar: ${calendarName}`);
       }
     }
   }
@@ -167,6 +168,7 @@ export class CalendarService {
           },
           "role": role
         };
+        this.count++
         const newAcl = Calendar.Acl!.insert(aclParam, calendarId);
         if (!newAcl) { throw new FetchError(`Failed to create a new ACL rule for ${userMailAddress}`); }
         Log.log("[Info] Success @createAclRule; Acl: %s", { newAcl });
