@@ -83,12 +83,12 @@ export class CalendarService {
     return undefined;
   }
   /**
- * Creates a calendar with the given name if it doesn't already exist
+ * Creates a calendar with the given name if it doesn't already exist.
  * @param {string} calendarName - The name of the calendar to create.
  * @returns {Calendar} The newly created calendar OR the existing calendar.
  * @throws {CreationError} If the creation try failed.
  */
-  createCalendarWithName(calendarName: string): CalendarWithRules {
+  getOrCreateCalendarByName(calendarName: string): CalendarWithRules {
     try {
       const existingCal = this.getCalendarByName(calendarName);
       Logger.log(`@setNewCalendar; calendar ${calendarName} exists. Skipping...`);

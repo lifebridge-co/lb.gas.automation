@@ -1,9 +1,11 @@
-import { role, roleList } from './common';
+import type { role } from './common';
 import { ParameterError, FetchError } from './Error';
 declare const exports: typeof import('./Error') & typeof import('./common');
 exports.FetchError;
 exports.ParameterError;
+
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
+const ROLE_LIST:role[] = ["none", "freeBusyReader", "reader", "writer", "owner"];
 
 /**
  * A type that represents the data structure of the role table.
@@ -25,11 +27,11 @@ export class SheetInterpreter {
 
   constructor(sheet_id: string, termTable: { [key: string]: role; }) {
     Object.entries(termTable).forEach(([key, value]) => { // param check
-      if (!roleList.includes(value)) { throw new ParameterError("termTable", "role", `${value}`); }
+      if (!ROLE_LIST.includes(value)) { throw new ParameterError("termTable", "role", `${value}`); }
     });
     const sheet = SpreadsheetApp.openById(sheet_id).getSheets()[0];
     if (!sheet) { throw new ParameterError("sheet_id", "valid Sheet Id", "invalid Sheet Id"); }
-    
+
     const data = this.retrieveArrayFromSheet(sheet);
     this.calendarNamesInSheet = data[0].filter(i => i);
     this.table = data.map((row, i, sheet) => { // Iterates over the rows; Returns IRoleTable[][]

@@ -45,14 +45,14 @@ const TERM_TABLE = {
 const main = () => {
   const sheetInterpreter = new SheetInterpreter(SHEET_ID, TERM_TABLE);
   const calendarService = new CalendarService();
-  sheetInterpreter.getCalendarNamesInSheet().map(calName => {
+  sheetInterpreter.getCalendarNamesInSheet().forEach(calName => {
     try {
-      const cal = calendarService.createCalendarWithName(calName);
-      Logger.log("@main calender: %s", cal.getName());
+      const cal = calendarService.getOrCreateCalendarByName(calName);
+      Logger.log("@main calender: %s (%s)", calName,cal.getName());
       const givenRules = sheetInterpreter.getRuleTable();
       Logger.log("@main givenRules: %s",{ givenRules });
 
-      givenRules[calName]?.map(rule => {
+      givenRules[calName]?.forEach(rule => {
         const result = calendarService.createAclRule(cal, rule.mail, rule.role);
         Logger.log("@main: new rule inserted. %s", { result });
       });
