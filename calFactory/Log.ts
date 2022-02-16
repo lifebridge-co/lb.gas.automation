@@ -1,13 +1,9 @@
 /// <reference path='./env.ts'>
 type LogLevel = "debug" | "warn" | "error";
 export class Log {
-  private logLevel: LogLevel;
-  private out: { log: (...args) => void; };
-  constructor(logLevel: LogLevel = env.LOG_LEVEL, out = env.LOG_TO) {
-    this.logLevel = logLevel;
-    this.out = out;
-  }
-  log(message: string, ...targets: any[]) {
+  static readonly logLevel: LogLevel= env.LOG_LEVEL;
+  static readonly out: { log: (...args:any[]) => void; }= env.LOG_TO;
+  static log(message: string, ...targets: any[]) {
     if (this.logLevel === "debug") {
       this.out.log(message, ...targets);
     } else if (this.logLevel === "warn" && (this.isWarnMessage(message) || this.isErrorMessage(message))) {
@@ -16,14 +12,14 @@ export class Log {
       this.out.log(message, ...targets);
     }
   }
-  message(message: string) {
+  static message(message: string) {
     this.out.log(`message: ${message}`);
   }
-  isWarnMessage(message: string) {
+  static isWarnMessage(message: string) {
     const warnRegex = /warn/gim;
     return warnRegex.test(message);
   }
-  isErrorMessage(message: string) {
+  static isErrorMessage(message: string) {
     const errorRegex = /error/gim;
     return errorRegex.test(message);
   }

@@ -31,30 +31,29 @@ import { CalendarService } from "./CalendarService";
 import { SheetInterpreter } from "./SheetInterpreter";
 import { Log } from './Log';
 declare const exports: typeof import('./CalendarService') & typeof import('./SheetInterpreter') & typeof import('./Log');
-exports.Log; // Be careful about the order of the `exports` statement.
-exports.CalendarService; // `CalenderService` uses Log class; this must be after `exports.Log` statement.
+exports.CalendarService;
 exports.SheetInterpreter;
+exports.Log;
 
 
 const main = () => {
-  const logs = new Log();
   const sheetInterpreter = new SheetInterpreter(env.SHEET_ID, env.TERM_TABLE);
   const calendarService = new CalendarService();
   sheetInterpreter.getCalendarNamesInSheet().forEach(calName => {
     try {
       const cal = calendarService.getOrCreateCalendarByName(calName);
-      logs.message(`@main calender: ${calName} (${cal.getName()})`);
+      Log.message(`@main calender: ${calName} (${cal.getName()})`);
       const givenRules = sheetInterpreter.getRuleTable();
-      logs.log("@main givenRules: %s", { givenRules });
+      Log.log("@main givenRules: %s", { givenRules });
 
       givenRules[calName]?.forEach(rule => {
         const result = calendarService.createAclRule(cal, rule.mail, rule.role);
-        logs.log("@main: new rule inserted. %s", { result });
+        Log.log("@main: new rule inserted. %s", { result });
       });
     } catch (err) {
-      logs.log("Error caught @main :%s", { err });
+      Log.log("Error caught @main :%s", { err });
     }
   });
-  logs.message(`@main: Finished. \n\n------results------\ninput:${sheetInterpreter.getRuleTable()}\n\noutput:${calendarService.getAllCalendars().map(cal => cal.toString()+"\n{ "+cal.rules.map(rule => rule.scope?.value+":"+rule.role).join(","))} }`);
+  Log.message(`@main: Finished. \n\n------results------\ninput:${sheetInterpreter.getRuleTable()}\n\noutput:${calendarService.getAllCalendars().map(cal => cal.toString()+"\n{ "+cal.rules.map(rule => rule.scope?.value+":"+rule.role).join(","))} }`);
 };
 
