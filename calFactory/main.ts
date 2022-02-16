@@ -43,7 +43,7 @@ const main = () => {
   sheetInterpreter.getCalendarNamesInSheet().forEach(calName => {
     try {
       const cal = calendarService.getOrCreateCalendarByName(calName);
-      logs.log("@main calender: %s (%s)", calName, cal.getName());
+      logs.message(`@main calender: ${calName} (${cal.getName()})`);
       const givenRules = sheetInterpreter.getRuleTable();
       logs.log("@main givenRules: %s", { givenRules });
 
