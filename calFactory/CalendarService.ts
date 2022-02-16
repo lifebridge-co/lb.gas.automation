@@ -6,7 +6,7 @@ exports.CreationError;
 
 type Calendar = GoogleAppsScript.Calendar.Calendar;
 type AclRule = GoogleAppsScript.Calendar.Schema.AclRule;
-type CalendarWithRules = Calendar & { rules: AclRule[]; };
+type CalendarWithRules = Calendar & { rules: AclRule[], name: string, id: string, toString: () => string; };
 
 /* The `CalendarService` class is a wrapper for the Google Calendar API and other Calendar related APIs.
  *
@@ -21,15 +21,26 @@ type CalendarWithRules = Calendar & { rules: AclRule[]; };
 export class CalendarService {
   private count = 0;
   private calendars: CalendarWithRules[];
+  private calendarToString = (name: string, id: string, ruleCnt: number) => (`calendar: { name: ${name}, id: ${id} } with ${ruleCnt}rules.`);
   constructor() {
     try {
       this.count++;
       this.calendars = CalendarApp.getAllOwnedCalendars().map((calendar) => {
         this.count++;
-        const aclItems = Calendar.Acl?.list(calendar.getId()).items ?? [];
-        return Object.assign(calendar, { rules: aclItems });
+        const calId = calendar.getId();
+        const calName = calendar.getName();
+        const aclItems = Calendar.Acl!.list(calId).items ?? [];
+        return Object.assign(
+          calendar,
+          {
+            rules: aclItems,
+            name: calName,
+            id: calId,
+            toString: this.calendarToString
+          }
+        );
       });
-      Logger.log("A new instance of CalendarService has been created. calendars: %s", JSON.stringify(this.calendars));
+      Logger.log("A new instance of CalendarService has been created. calendars: %s", this.calendars);
     } catch (err) {
       throw new FetchError(
         `Failed to instantiate CalendarService. I may failed to get the calendars or AclRules; ${err}`
@@ -44,7 +55,7 @@ export class CalendarService {
    */
   getCalendarById(id: string): CalendarWithRules {
     for (const calendar of this.calendars) {
-      if (calendar.getId() === id) {
+      if (calendar.id === id) {
         return calendar;
       }
     }
@@ -52,13 +63,13 @@ export class CalendarService {
   }
   /**
    * Gets the calendar with the given name.
-   * @param {string} name - The name of the calendar to be retrieved.
+   * @param {string} name The name of the calendar to be retrieved.
    * @returns {CalendarWithRules} The calendar object.
    * @throws {FetchError} If the calendar is not found.
    */
   getCalendarByName(name: string): CalendarWithRules {
     for (const calendar of this.calendars) {
-      if (calendar.getName() === name) {
+      if (calendar.name === name) {
         return calendar;
       }
     }
@@ -66,21 +77,36 @@ export class CalendarService {
   }
   /**
    * Get the ACL rule for the specified user
-   * @param {string} calendarId - The ID of the calendar to which the ACL rule belongs.
-   * @param {string} userMailAddress - The email address of the target user.
-   * @returns The ACL rule OR `undefined`.
+   * @param {string} calendarId The ID of the calendar to which the ACL rule belongs.
+   * @param {string} userMailAddress The email address of the target user.
+   * @returns {AclRule | undefined} There's three cases.
+   *  1. When the calendar has a rule for the user (AclRule object), this returns that rule.
+   *  2. When not, it returns the rule (AclRule object) that says the user has no permission.
+   *  3. In other case (like the calender is totally new and has no rules for any users), this returns `undefined`.
    */
-  getAclRule(calendar: string | CalendarWithRules, userMailAddress: string) {
-    const calendarId = typeof calendar === "string" ? calendar : calendar.getId();
-    const aclItems = Calendar.Acl!.list(calendarId).items;
-    if (!aclItems || aclItems.length === 0) { return; }
+  getAclRule(_calendar: string | CalendarWithRules, userMailAddress: string) {
+    const calendar = (typeof _calendar === "string") ? this.getCalendarById(_calendar) : _calendar;
+    const aclItems = calendar.rules;
+    if (!aclItems) {
+      Logger.log("[WORNING] Something is wrong. Failed to get the ACL rule of %s. @CalendarService.getAclRule", calendar.name);
+      return undefined;
+    }
+    if (aclItems.length === 0) {
+      Logger.log("Calendar %s does not have any Acl rules. @CalendarService.getAclRule", calendar.name);
+      return undefined;
+    }
     for (const item of aclItems) {
       if (item.scope?.value === userMailAddress) {
         return item;
       }
     }
-    Logger.log("Failed to get the ACL rule of %s .", { calendar });
-    return undefined;
+    Logger.log(`Calendar ${calendar.name} does not have an Acl rule for ${userMailAddress}. Returns as "none" access role. @CalendarService.getAclRule`);
+    return {
+      id: `user:${userMailAddress}`,
+      kind: "calendar#aclRule",
+      role: "none",
+      scope: { type: "user", value: userMailAddress }
+    };
   }
   /**
  * Creates a calendar with the given name if it doesn't already exist.
@@ -94,10 +120,19 @@ export class CalendarService {
       Logger.log(`@setNewCalendar; calendar ${calendarName} exists. Skipping...`);
       return existingCal;
     } catch (e) { // If the calendar is not found.
-      const newCalendar = CalendarApp.createCalendar(calendarName);
-      if (!!newCalendar) {
-        Logger.log("Success @setNewCalendar; Calendar: %s", { newCalendar });
-        return Object.assign(newCalendar, { rules: [] as AclRule[] });
+      const _newCalendar = CalendarApp.createCalendar(calendarName);
+      if (!!_newCalendar) {
+        const newCalendar = Object.assign(_newCalendar,
+          {
+            rules: [] as AclRule[],
+            name: _newCalendar.getName(),
+            id: _newCalendar.getId(),
+            toString: this.calendarToString
+          }
+        );
+        this.calendars.push(newCalendar);
+        Logger.log("Success @setNewCalendar; Calendar: %s", newCalendar);
+        return newCalendar;
       } else {
         throw new CreationError(`Failed to create a new calendar: ${calendarName}`);
       }
@@ -115,7 +150,7 @@ export class CalendarService {
  */
   createAclRule(calendar: string | CalendarWithRules, userMailAddress: string, role: role): AclRule {
     try {
-      const calendarId = typeof calendar === "string" ? calendar : calendar.getId();
+      const calendarId = typeof calendar === "string" ? calendar : calendar.id;
       const rule = this.getAclRule(calendarId, userMailAddress);
       if (rule?.role === role) {
         Logger.log("Notice @createAclRule; The exact Role already exists: { %s: %s }", userMailAddress, JSON.stringify(role));
@@ -129,6 +164,7 @@ export class CalendarService {
           "role": role
         };
         const newAcl = Calendar.Acl!.insert(aclParam, calendarId);
+        if(!newAcl) {throw new FetchError(`Failed to create a new ACL rule for ${userMailAddress}`);}
         Logger.log("Success @createAclRule; Acl: %s", { newAcl });
         return newAcl;
       }
