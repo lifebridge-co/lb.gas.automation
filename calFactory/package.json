@@ -1,6 +1,6 @@
 {
   "name": "kei.gas.calFactory",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "exports": "./build/src/index.js",
   "main": "build/src/index.js",

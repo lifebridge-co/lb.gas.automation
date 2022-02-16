@@ -19,7 +19,7 @@
  *
  * Set any options at `env.ts` file.
  *
- * @version v0.0.3
+ * @version v0.0.4
  * @license Reserved
  * This script is to used by the person or organization the author acknowledges to do so.
  * 2022-02-12
