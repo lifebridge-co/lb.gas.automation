@@ -40,7 +40,7 @@ export class CalendarService {
           }
         );
       });
-      Logger.log("A new instance of CalendarService has been created. calendars: %s", this.calendars);
+      Logger.log("[Info] A new instance of CalendarService has been created. calendars: %s", this.calendars);
     } catch (err) {
       throw new FetchError(
         `Failed to instantiate CalendarService. I may failed to get the calendars or AclRules; ${err}`
