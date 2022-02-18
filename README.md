@@ -1,34 +1,6 @@
-# Clasp
+# gas
 
-![build status](https://github.com/google/clasp/actions/workflows/ci.yaml/badge.svg)
-<a href="https://coveralls.io/github/google/clasp?branch=master"><img src="https://coveralls.io/repos/github/google/clasp/badge.svg?branch=master" alt="Coverage Status"></a>
-<a href="https://www.npmjs.com/package/@google/clasp"><img src="https://img.shields.io/npm/v/@google/clasp.svg" alt="npm Version"></a>
-<a href="https://npmcharts.com/compare/@google/clasp?minimal=true"><img src="https://img.shields.io/npm/dw/@google/clasp.svg" alt="npm Downloads"></a>
-<a href="https://david-dm.org/google/clasp" title="dependencies status"><img src="https://david-dm.org/google/clasp/status.svg"/></a>
-<a href="https://github.com/google/gts" title="Code Style: Google"><img src="https://img.shields.io/badge/code%20style-google-blueviolet.svg"/></a>
 
-> Develop [Apps Script](https://developers.google.com/apps-script/) projects locally using clasp (**C**ommand **L**ine **A**pps **S**cript **P**rojects).
-
-<!-- GIF bash prompt: PS1='\[\033[38;5;9m\]❤  \[$(tput sgr0)\]' -->
-<!-- Width: 888px -->
-<!-- Commands:
-clasp create "Hello"
-ls
-echo 'function hello() {
-  Logger.log("Hello, Apps Script!");
-}' >> hello.js
-clasp push
-clasp deploy
-rm .clasp.json appsscript.json hello.js
-clear
--->
-![clasp](https://user-images.githubusercontent.com/744973/42856573-a5d96d7c-89fa-11e8-9d69-8d2c66f00d8d.gif)
-
-**To get started, try out the [codelab](https://g.co/codelabs/clasp)!**
-
-You can also try clasp in Gitpod, a one-click online IDE for GitHub:
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/google/clasp/blob/master/docs/Gitpod/)
 
 ## Features
 
