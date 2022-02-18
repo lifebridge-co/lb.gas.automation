@@ -3,6 +3,8 @@ type LogLevel = "debug" | "warn" | "error";
 export class Log {
   static readonly logLevel: LogLevel= env.LOG_LEVEL;
   static readonly out: { log: (...args:any[]) => void; }= env.LOG_TO;
+  static logAll :string; // TODO accumulate log.
+  static logALL :string; // TODO
   static log(message: string, ...targets: any[]) {
     if (this.logLevel === "debug") {
       this.out.log(message, ...targets);
