@@ -27,7 +27,4 @@ export class Log {
     const errorRegex = /error/gim;
     return errorRegex.test(message);
   }
-  static getTimeStamp(){
-    return new Date().toISOString();
-  }
 }

@@ -7,10 +7,10 @@ yarn-error.log*
 .env
 .nyc_output
 *.lock
+*lock.yaml
 
 build
 coverage
 node_modules
 tmp
-.clasprc.json
 .clasp.json

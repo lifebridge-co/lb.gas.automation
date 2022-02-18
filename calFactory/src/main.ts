@@ -30,15 +30,19 @@
 import { CalendarService } from "./CalendarService";
 import { SheetInterpreter } from "./SheetInterpreter";
 import { Log } from './Log';
-declare const exports: typeof import('./CalendarService') & typeof import('./SheetInterpreter') & typeof import('./Log');
+import { saveToDrive } from './saveToDrive';
+declare const exports: typeof import('./CalendarService') & typeof import('./SheetInterpreter') & typeof import('./Log')& typeof import('./saveToDrive');
 exports.CalendarService;
 exports.SheetInterpreter;
 exports.Log;
-
+exports.saveToDrive;
 
 const main = () => {
   const sheetInterpreter = new SheetInterpreter(env[env.ENV].SHEET_ID, env[env.ENV].TERM_TABLE);
   const calendarService = new CalendarService();
+  const beforeState =calendarService.getAllCalendars().map(cal => (
+    cal.toString()+'\n"rules": { '+cal.rules.map(rule => '\n\t"'+rule.scope?.value+'"'+":"+'"'+rule.role+'"').join(",")+"\n}")
+    ).join("\n");
   sheetInterpreter.getCalendarNamesInSheet().forEach(calName => {
     try {
       const cal = calendarService.getOrCreateCalendarByName(calName);
@@ -64,6 +68,10 @@ const main = () => {
     cal.toString()+'\n"rules": { '+cal.rules.map(rule => '\n\t"'+rule.scope?.value+'"'+":"+'"'+rule.role+'"').join(",")+"\n}")
     );
   Log.message(`Calender API call: ${calendarService.getCount()+result.getCount()} times`)
-
+  const afterState =result.getAllCalendars().map(cal => (
+    cal.toString()+'\n"rules": { '+cal.rules.map(rule => '\n\t"'+rule.scope?.value+'"'+":"+'"'+rule.role+'"').join(",")+"\n}")
+    ).join("\n");
+  saveToDrive("1xSS56Rti8x60rqTpaJnP5ojCgmbCFLy8",`log${new Date().toISOString()}_01before`,"before:\n\n"+beforeState,"log");
+  saveToDrive("1xSS56Rti8x60rqTpaJnP5ojCgmbCFLy8",`log${new Date().toISOString()}_02after`,"after:\n\n"+afterState,"log");
 };
 
