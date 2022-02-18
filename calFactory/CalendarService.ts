@@ -8,7 +8,7 @@ exports.FetchError;
 type Calendar = GoogleAppsScript.Calendar.Calendar;
 type AclRule = GoogleAppsScript.Calendar.Schema.AclRule;
 type CalendarWithRules = Calendar & { rules: AclRule[], name: string, id: string, toString: () => string; };
-
+  document.querySelector("#grw-navbar > ul > li:nth-child(7) > div > a")?.classList
 /* The `CalendarService` class is a wrapper for the Google Calendar API and other Calendar related APIs.
  *
  * @method getAllCalendars

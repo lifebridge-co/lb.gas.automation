@@ -1,5 +1,6 @@
 {
-  "extends": "../node_modules/gts/tsconfig-google.json",
+  "extends": "./node_modules/gts/tsconfig-google.json",
+  "basedir":"..",
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "alwaysStrict": true,
