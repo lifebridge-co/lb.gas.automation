@@ -37,7 +37,7 @@ exports.Log;
 
 
 const main = () => {
-  const sheetInterpreter = new SheetInterpreter(env.SHEET_ID, env.TERM_TABLE);
+  const sheetInterpreter = new SheetInterpreter(env[env.ENV].SHEET_ID, env[env.ENV].TERM_TABLE);
   const calendarService = new CalendarService();
   sheetInterpreter.getCalendarNamesInSheet().forEach(calName => {
     try {

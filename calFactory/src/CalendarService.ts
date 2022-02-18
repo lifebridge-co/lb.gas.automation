@@ -178,7 +178,7 @@ export class CalendarService {
       if (err instanceof Error) {
         throw err;
       } else {
-        throw new Error(err);
+        throw new Error(JSON.stringify({err}));
       }
     }
   }

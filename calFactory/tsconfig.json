@@ -1,33 +1,21 @@
 {
-  "extends": "../node_modules/gts/tsconfig-google.json",
+  "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "alwaysStrict": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
     "lib": ["ESNext"],
-    "noResolve": true,
-    "module": "None",
-    "newLine": "lf",
+    "types":["google-apps-script"],
     "noImplicitAny": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "outDir": "build",
     "rootDir": ".",
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
-    "stripInternal": true,
-    "suppressExcessPropertyErrors": true,
-    "suppressImplicitAnyIndexErrors": true,
     "target": "es2019",
 
     "importHelpers": true // canary: will cause runtime error if `tslib` is necessary
   },
   "include": [
-    "./**.ts",
+    "src/**.ts",
     "test/**.ts"
   ]
 }
