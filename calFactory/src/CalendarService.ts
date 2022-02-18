@@ -8,7 +8,7 @@ exports.FetchError;
 type Calendar = GoogleAppsScript.Calendar.Calendar;
 type AclRule = GoogleAppsScript.Calendar.Schema.AclRule;
 type CalendarWithRules = Calendar & { rules: AclRule[], name: string, id: string, toString: () => string; };
-  document.querySelector("#grw-navbar > ul > li:nth-child(7) > div > a")?.classList
+
 /* The `CalendarService` class is a wrapper for the Google Calendar API and other Calendar related APIs.
  *
  * @method getAllCalendars
@@ -88,7 +88,7 @@ export class CalendarService {
    *  2. When not, it returns the rule (AclRule object) that says the user has no permission.
    *  3. In other case (like the calender is totally new and has no rules for any users), this returns `undefined`.
    */
-  getAclRule(_calendar: string | CalendarWithRules, userMailAddress: string) {
+  getAclRule(_calendar: string | CalendarWithRules, userMailAddress: string): AclRule | undefined {
     const calendar = (typeof _calendar === "string") ? this.getCalendarById(_calendar) : _calendar;
     const aclItems = calendar.rules;
     if (!aclItems) {
