@@ -55,6 +55,15 @@ const main = () => {
       Log.log("Error caught @main :%s", { err });
     }
   });
-  Log.message(`@main: Finished. \n\n------------results------------\ninput:\n${JSON.stringify(sheetInterpreter.getRuleTable())}\n\noutput:\n${calendarService.getAllCalendars().map(cal => cal.toString()+'\n"rules": { '+cal.rules.map(rule => '\n\t"'+rule.scope?.value+'"'+":"+'"'+rule.role+'"').join(",")+"\n}").join("\n")}\n\nCalender API call: ${calendarService.getCount()} times`);
+  const result=new CalendarService();
+  Log.message(`@main: Finished.\n\n------------results------------`);
+  Log.message(`intput:`);
+  Log.message(JSON.stringify(sheetInterpreter.getRuleTable()));
+  Log.message(`output:`);
+  result.getAllCalendars().forEach(cal => Log.message(
+    cal.toString()+'\n"rules": { '+cal.rules.map(rule => '\n\t"'+rule.scope?.value+'"'+":"+'"'+rule.role+'"').join(",")+"\n}")
+    );
+  Log.message(`Calender API call: ${calendarService.getCount()+result.getCount()} times`)
+
 };
 
