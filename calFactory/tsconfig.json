@@ -3,6 +3,7 @@
   "compilerOptions": {
     "lib": ["ESNext"],
     "types":["google-apps-script"],
+    "module":"None",
     "noImplicitAny": true,
     "outDir": "build",
     "rootDir": ".",
