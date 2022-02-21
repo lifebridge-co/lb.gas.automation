@@ -27,25 +27,27 @@
  */
 
 /// <reference path='./env.ts'>
-import { CalendarService } from "./CalendarService";
+import { CalendarService, CalendarWithRules } from "./CalendarService";
 import { SheetInterpreter } from "./SheetInterpreter";
 import { Log } from './Log';
-import { saveToDrive } from './saveToDrive';
-declare const exports: typeof import('./CalendarService') & typeof import('./SheetInterpreter') & typeof import('./Log')& typeof import('./saveToDrive');
+import { Drive } from './Drive';
+declare const exports: typeof import('./CalendarService') & typeof import('./SheetInterpreter') & typeof import('./Log') & typeof import('./Drive');
 exports.CalendarService;
 exports.SheetInterpreter;
 exports.Log;
-exports.saveToDrive;
+exports.Drive;
 
 const main = () => {
-  const sheetInterpreter = new SheetInterpreter(env[env.ENV].SHEET_ID, env[env.ENV].TERM_TABLE);
+  const time01 = Date.now();
+  const env = Env[Env.mode];
+  const sheetInterpreter = new SheetInterpreter(env.SHEET_ID, env.SHEET_NAME, env.TERM_TABLE);
   const calendarService = new CalendarService();
-  const beforeState =calendarService.getAllCalendars().map(cal => (
-    cal.toString()+'\n"rules": { '+cal.rules.map(rule => '\n\t"'+rule.scope?.value+'"'+":"+'"'+rule.role+'"').join(",")+"\n}")
-    ).join("\n");
+
+  const initialState: string = calendarService.toJson();
+
   sheetInterpreter.getCalendarNamesInSheet().forEach(calName => {
     try {
-      const cal = calendarService.getOrCreateCalendarByName(calName);
+      const cal = calendarService.getOrCreateCalendarWithName(calName);
       Log.message(`@main calender: ${calName}`);
       const givenRules = sheetInterpreter.getRuleTable();
       Log.log("@main givenRules: %s", { givenRules });
@@ -59,19 +61,18 @@ const main = () => {
       Log.log("Error caught @main :%s", { err });
     }
   });
-  const result=new CalendarService();
-  Log.message(`@main: Finished.\n\n------------results------------`);
+
+  Log.message(`@main: Finished.\n\n||============|results|============||`);
   Log.message(`intput:`);
-  Log.message(JSON.stringify(sheetInterpreter.getRuleTable()));
+  Log.logLineByLine(initialState,{lines:6});
+  calendarService.renew();
+  const closingState = calendarService.toJson();
   Log.message(`output:`);
-  result.getAllCalendars().forEach(cal => Log.message(
-    cal.toString()+'\n"rules": { '+cal.rules.map(rule => '\n\t"'+rule.scope?.value+'"'+":"+'"'+rule.role+'"').join(",")+"\n}")
-    );
-  Log.message(`Calender API call: ${calendarService.getCount()+result.getCount()} times`)
-  const afterState =result.getAllCalendars().map(cal => (
-    cal.toString()+'\n"rules": { '+cal.rules.map(rule => '\n\t"'+rule.scope?.value+'"'+":"+'"'+rule.role+'"').join(",")+"\n}")
-    ).join("\n");
-  saveToDrive("1xSS56Rti8x60rqTpaJnP5ojCgmbCFLy8",`log${new Date().toISOString()}_01before`,"before:\n\n"+beforeState,"log");
-  saveToDrive("1xSS56Rti8x60rqTpaJnP5ojCgmbCFLy8",`log${new Date().toISOString()}_02after`,"after:\n\n"+afterState,"log");
+  Log.logLineByLine(closingState,{lines:6})
+  Log.message(`Calender API call: ${calendarService.getCount()} times`);
+  Drive.saveToDrive(env.DRIVE_FOLDER_ID, `log${new Date().toISOString()}_01before.log`, "before:\n\n" + initialState);
+  Drive.saveToDrive(env.DRIVE_FOLDER_ID, `log${new Date().toISOString()}_02after.log`, "after:\n\n" + closingState);
+  const time02 = Date.now();
+  Log.message(`time: ${(time02 - time01) / 1000}s.`);
 };
 

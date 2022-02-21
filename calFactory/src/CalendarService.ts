@@ -7,26 +7,41 @@ exports.CreationError;
 exports.FetchError;
 type Calendar = GoogleAppsScript.Calendar.Calendar;
 type AclRule = GoogleAppsScript.Calendar.Schema.AclRule;
-type CalendarWithRules = Calendar & { rules: AclRule[], name: string, id: string, toString: () => string; };
+export type CalendarWithRules = Calendar & { rules: AclRule[], name: string, id: string, toString: () => string; };
 
-/* The `CalendarService` class is a wrapper for the Google Calendar API and other Calendar related APIs.
+/* The `CalendarService` class is a wrapper service for Google Calendar API. Handles Calendar , CalendarApp and AclRule class.
  *
  * @method getAllCalendars
  * @method getCalendarById
  * @method getCalendarByName
  * @method getAclRule
  * @method createCalendarWithName
+ * @method getOrCreateCalendarWithName
  * @method createAclRule
  * @method getCount
  */
 export class CalendarService {
   private count = 0;
   private calendars: CalendarWithRules[];
-  private calendarToString = (name: string, id: string, ruleCnt: number) => (()=>`"calendar": { "name":"${name}", "id":"${id}" } with ${ruleCnt} rules.`);
+  private calendarToString = (name: string, id: string, ruleCnt: number) => (() => `"calendar": { "name":"${name}", "id":"${id}" } with ${ruleCnt} rules.`);
   constructor() {
+    this.calendars = this.fetchAllCalendars();
+    Log.log("[Info] A new instance of CalendarService has been created. calendars: %s", this.calendars);
+  }
+  toJson(): string {
+    return `{\n${this.calendars.map(cal => (
+      `\t"${cal.name}":{\n\t\t"id":"${cal.id}",\n\t\t"rules":{"${cal.rules.map(rule => `\n\t\t\t"${rule.scope?.value}":"${rule.role}"`).join(",")}\n\t}`
+    )).join(",\n")}\n}`;
+  }
+  /**
+ * Returns all the calendars from the Google Calendar API.
+ * @returns {CalendarWithRules[]} An array of calendars.
+ * @throws {FetchError} When failed to fetch calendar data.
+ */
+  private fetchAllCalendars(): CalendarWithRules[] {
     try {
       this.count++;
-      this.calendars = CalendarApp.getAllOwnedCalendars().map((calendar) => {
+      const _calendars = CalendarApp.getAllOwnedCalendars()?.map((calendar) => {
         this.count++;
         const calId = calendar.getId();
         const calName = calendar.getName();
@@ -41,19 +56,38 @@ export class CalendarService {
           }
         );
       });
-      Log.log("[Info] A new instance of CalendarService has been created. calendars: %s", this.calendars);
+      if (!_calendars?.length) { // if undefined or 0.
+        throw new FetchError(
+          `Failed to fetch calenders from Calender API.`
+        );
+      }
+      return _calendars;
     } catch (err) {
       throw new FetchError(
-        `Failed to instantiate CalendarService. I may failed to get the calendars or AclRules; ${err}`
+        `Failed to fetch calenders (or AclRules) from Calender API. details: ${err}`
       );
     }
   }
-  getAllCalendars() {
+  /**
+   * Fetches all the calendars from the Google Calendar API.
+   * @returns {CalendarWithRules[]} The calendars array.
+   */
+  renew(): CalendarWithRules[] {
+    this.calendars = this.fetchAllCalendars();
+    return this.calendars;
+  }
+  /**
+   * Returns all the calendars from the Google Calendar API.
+   * Note that they're in memory cashed.
+   * To get the newest online state, use `renew` method.
+   * @returns {CalendarWithRules[]} An array of calendars.
+   */
+  getAllCalendars(): CalendarWithRules[] {
     return this.calendars;
   }
   /**
    * Gets the calendar with given id string.
-   * @param {string} id - The id of the calendar to be retrieved.
+   * @param {string} id  The id of the calendar to get.
    * @returns {CalendarWithRules} The calendar object.
    * @throws {FetchError} If the calendar is not found.
    */
@@ -67,7 +101,7 @@ export class CalendarService {
   }
   /**
    * Gets the calendar with the given name.
-   * @param {string} name The name of the calendar to be retrieved.
+   * @param {string} name The name of the calendar to get.
    * @returns {CalendarWithRules} The calendar object.
    * @throws {FetchError} If the calendar is not found.
    */
@@ -113,18 +147,43 @@ export class CalendarService {
     };
   }
   /**
+ * Ges a calendar by name. If not exist.
+ * @param {string} calendarName - The name of the calendar to create.
+ * @returns {Calendar} The newly created calendar.
+ * @throws {CreationError} If the creation try failed.
+ */
+  createCalendarWithName(calendarName: string): CalendarWithRules {
+    this.count++;
+    const _newCalendar = CalendarApp.createCalendar(calendarName);
+    if (_newCalendar) {
+      const newCalendar = Object.assign(_newCalendar,
+        {
+          rules: [] as AclRule[],
+          name: _newCalendar.getName(),
+          id: _newCalendar.getId(),
+          toString: this.calendarToString(_newCalendar.getName(), _newCalendar.getId(), 0)
+        }
+      );
+      this.calendars.push(newCalendar);
+      Log.log("[Info] Success @setNewCalendar; Calendar: %s", newCalendar);
+      return newCalendar;
+    } else {
+      throw new CreationError(`Failed to create a new calendar: ${calendarName}`);
+    }
+  }
+  /**
  * Creates a calendar with the given name if it doesn't already exist.
  * @param {string} calendarName - The name of the calendar to create.
  * @returns {Calendar} The newly created calendar OR the existing calendar.
  * @throws {CreationError} If the creation try failed.
  */
-  getOrCreateCalendarByName(calendarName: string): CalendarWithRules {
+  getOrCreateCalendarWithName(calendarName: string): CalendarWithRules {
     try {
       const existingCal = this.getCalendarByName(calendarName);
       Log.log(`[Info] @setNewCalendar; calendar ${calendarName} exists. Skipping...`);
       return existingCal;
     } catch (e) { // If the calendar is not found.
-      this.count++
+      this.count++;
       const _newCalendar = CalendarApp.createCalendar(calendarName);
       if (!!_newCalendar) {
         const newCalendar = Object.assign(_newCalendar,
@@ -158,7 +217,10 @@ export class CalendarService {
       const calendarId = typeof calendar === "string" ? calendar : calendar.id;
       const rule = this.getAclRule(calendarId, userMailAddress);
       if (rule?.role === role) {
-        Log.log("[Notice] @createAclRule; The exact Role already exists: { %s: %s }", userMailAddress, JSON.stringify(role));
+        Log.log(
+          "[Notice] @createAclRule; The exact Role already exists: { %s: %s }",
+          userMailAddress, JSON.stringify(role)
+        );
         return rule;
       } else {
         const aclParam = {
@@ -168,7 +230,7 @@ export class CalendarService {
           },
           "role": role
         };
-        this.count++
+        this.count++;
         const newAcl = Calendar.Acl!.insert(aclParam, calendarId);
         if (!newAcl) { throw new FetchError(`Failed to create a new ACL rule for ${userMailAddress}`); }
         Log.log("[Info] Success @createAclRule; Acl: %s", { newAcl });
@@ -178,7 +240,7 @@ export class CalendarService {
       if (err instanceof Error) {
         throw err;
       } else {
-        throw new Error(JSON.stringify({err}));
+        throw new Error(JSON.stringify({ err }));
       }
     }
   }

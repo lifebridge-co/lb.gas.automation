@@ -6,7 +6,6 @@ exports.FetchError;
 exports.ParameterError;
 exports.Log;
 type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
-const ROLE_LIST: role[] = ["none", "freeBusyReader", "reader", "writer", "owner"];
 
 /**
  * A type that represents the data structure of the role table.
@@ -23,15 +22,18 @@ interface IRuleTable {
  * @method getCalendarNamesInSheet
  */
 export class SheetInterpreter {
+  private readonly ROLE_LIST: role[] = ["none", "freeBusyReader", "reader", "writer", "owner"];
   private table: IRuleTable;
   private calendarNamesInSheet: Array<string>;
 
-  constructor(sheet_id: string, termTable: { [key: string]: role; }) {
+  constructor(sheetId: string, sheetName: string, termTable: { [key: string]: role; }) {
     Object.entries(termTable).forEach(([key, value]) => { // param check
-      if (!ROLE_LIST.includes(value)) { throw new ParameterError("termTable", "role", `${value}`); }
+      if (!this.ROLE_LIST.includes(value)) { throw new ParameterError("termTable", "role", `${value}`); }
     });
-    const sheet = SpreadsheetApp.openById(sheet_id).getSheets()[0];
-    if (!sheet) { throw new ParameterError("sheet_id", "valid Sheet Id", "invalid Sheet Id"); }
+    const spreadSheet = SpreadsheetApp.openById(sheetId);
+    if (!spreadSheet) { throw new ParameterError("sheet_id", "valid SpreadSheet Id", "invalid SpreadSheet Id"); }
+    const sheet = spreadSheet.getSheetByName(sheetName);
+    if (!sheet) { throw new FetchError(`There is no sheet named "${sheetName}" . Sheet not found.`); }
 
     const data = this.retrieveArrayFromSheet(sheet);
     this.calendarNamesInSheet = data[0].filter(i => i);
@@ -64,7 +66,7 @@ export class SheetInterpreter {
   private retrieveArrayFromSheet(sheet: Sheet): string[][] {
     return sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn())
       .getValues()
-      .filter((i) => ~~i?.length > 1);
+      .filter((i) => ~~i?.length > 1); // not `false`, `null`, `NaN`, `""`, `0`, `Infinit`, `[]`, `{}`, nor `undefined`
   }
   /**
    * Gets the permission table.
