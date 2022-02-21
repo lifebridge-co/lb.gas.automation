@@ -12,7 +12,6 @@ specifiers:
   '@types/recursive-readdir': ^2.2.0
   '@types/server-destroy': ^1.0.1
   '@types/tmp': ^0.2.1
-  '@types/wtfnode': ^0.7.0
   chai: ^4.3.4
   chalk: ^4.1.2
   chokidar: ^3.5.2
