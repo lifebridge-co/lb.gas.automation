@@ -1,0 +1,39 @@
+{
+  "source": {
+    "includePattern": ".+\\.ts(doc|x)?$",
+    "excludePattern": ".+\\.(test|spec).ts",
+    "include": [
+      "src"
+    ]
+  },
+  "plugins": [
+    "plugins/markdown",
+    "node_modules/jsdoc-babel"
+  ],
+  "opts": {
+    "destination": "./md_doc/",
+    "recurse": true,
+    "verbose": true
+  },
+  "babel": {
+    "extensions": [
+      "ts",
+      "tsx"
+    ],
+    "ignore": [
+      "**/*.(test|spec).ts"
+    ],
+    "babelrc": false,
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": true
+          }
+        }
+      ],
+      "@babel/preset-typescript"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "source": {
+    "includePattern": ".+\\.ts(doc|x)?$",
+    "include": [
+      "src"
+    ]
+  },
+  "tags": {
+      "allowUnknownTags": ["class"]
+  },
+  "plugins": [
+    "plugins/markdown",
+    "node_modules/better-docs/typescript",
+    "plugins/summarize"
+  ],
+  "opts": {
+    "template": "node_modules/better-docs",
+    "destination": "./doc/", // same as -d ./out/
+    "recurse": true,
+    "verbose": true
+  }
+}

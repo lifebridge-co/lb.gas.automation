@@ -2,6 +2,9 @@
   "files.exclude": {},
   "cSpell.words": [
     "cals",
-    "Dwuakfe"
-  ]
+    "Dwuakfe",
+    "linenums"
+  ],
+  "docwriter.style": "Auto-detect",
+  "markiscodecoverage.searchCriteria": "**/coverage/lcov*.info"
 }

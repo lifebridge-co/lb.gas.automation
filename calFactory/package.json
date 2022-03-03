@@ -2,32 +2,26 @@
   "name": "kei.gas.calFactory",
   "version": "0.0.4",
   "type": "module",
-  "exports": "./build/src/index.js",
-  "main": "build/src/index.js",
+  "exports": "./build/src/main.ts",
+  "main": "./build/src/main.ts",
   "engines": {
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
   },
-  "bin": {
-    "clasp": "build/src/index.js"
-  },
-  "files": [
-    "docs",
-    "build/src"
-  ],
   "scripts": {
     "build": "npm run compile && npm i -g --loglevel=error --force",
     "build-fresh": "npm cache clean --force && npm i && npm run build",
     "watch": "tsc --project tsconfig.json --watch",
     "prepare": "npm run compile",
     "lint": "npm run check",
-    "test": "nyc mocha --cache false --timeout 100000 --recursive build/test",
-    "coverage": "nyc --cache false report --reporter=text-lcov | coveralls",
+    "test": "jest --cache false",
     "prettier": "prettier src test --write",
-    "check": "gts check src/*.ts src/**/*.ts test/*.ts test/**/*.ts",
+    "check": "gts check src/*.ts src/**/*.ts",
     "clean": "gts clean",
     "compile": "tsc",
-    "fix": "gts fix src/*.ts src/**/*.ts test/*.ts test/**/*.ts",
-    "pretest": "npm run compile && npm run check"
+    "fix": "gts fix src/*.ts src/**/*.ts",
+    "pretest": "npm run compile",
+    "doc": "jsdoc -c ./jsdoc.json",
+    "mddoc": "jsdoc2md --files ./src/*.ts --configure ./jsdoc2md.json> ./md_doc/README.md"
   },
   "nyc": {
     "include": [
@@ -45,7 +39,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/google/clasp"
+    "url": "https://github.com/nominalrune/kei.gas.calFactory"
   },
   "keywords": [
     "Apps",
@@ -56,8 +50,6 @@
     "extension",
     "add-on"
   ],
-  "author": "Grant Timmerman",
-  "license": "Apache-2.0",
   "dependencies": {
     "@sindresorhus/is": "^4.0.1",
     "chalk": "^4.1.2",
@@ -87,27 +79,37 @@
     "server-destroy": "^1.0.1",
     "split-lines": "^3.0.0",
     "strip-bom": "^5.0.0",
-    "ts2gas": "^4.2.0",
-    "typescript": "^4.4.2"
+    "ts2gas": "^4.2.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.17.6",
+    "@babel/core": "^7.17.5",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-typescript": "^7.16.7",
     "@types/chai": "^4.2.21",
     "@types/debounce": "^1.2.0",
     "@types/fs-extra": "^9.0.12",
     "@types/google-apps-script": "^1.0.45",
     "@types/inquirer": "^7.3.3",
-    "@types/mocha": "^9.0.0",
+    "@types/jest": "^27.4.1",
+    "@types/mocha": "^9.1.0",
     "@types/node": "^12.20.21",
     "@types/recursive-readdir": "^2.2.0",
     "@types/server-destroy": "^1.0.1",
     "@types/tmp": "^0.2.1",
+    "better-docs": "^2.7.2",
     "chai": "^4.3.4",
     "coveralls": "^3.1.1",
     "gts": "^3.1.0",
-    "mocha": "^9.1.1",
+    "jest": "^27.5.1",
+    "jsdoc-babel": "^0.5.0",
+    "jsdoc-to-markdown": "^7.1.1",
     "nyc": "^15.1.0",
     "prettier": "^2.3.2",
     "tmp": "^0.2.1",
-    "type-fest": "^2.1.0"
+    "ts-jest": "^27.1.3",
+    "ts-node": "^10.5.0",
+    "type-fest": "^2.1.0",
+    "typescript": "^4.5.5"
   }
 }
