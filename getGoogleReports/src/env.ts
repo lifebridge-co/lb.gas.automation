@@ -7,9 +7,9 @@ namespace Env {
 
   export namespace prod {
     // set your sheet id
-    export const SHEET_ID = '1INKHQNd9fgleQcw1SCrEq2jMAXf4hZJsNkG9n0dGJCI';
+    export const SHEET_ID = '1zYdz1_vGapDEvQxfM-AB3IBMZbcPDwuakfeKdYI4n7k';
     export const SHEET_NAME = 'prod';
-    export const DRIVE_FOLDER_ID = '1yAyC9-coUGnoBDZ6442IFHez7Kb0ZThT';
+    export const DRIVE_FOLDER_ID = '1xSS56Rti8x60rqTpaJnP5ojCgmbCFLy8';
     export const LOG_LEVEL: LogLevel = 'error';
     export const LOG_TO = Logger;
     export const TERM_TABLE = {

@@ -1,0 +1,10 @@
+{
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "moduleFileExtensions": ["ts", "js", "json"],
+  "collectCoverage": true,
+  "coverageDirectory": "coverage",
+  "testMatch": [
+    "**/src/**/*.test.ts"
+  ]
+}

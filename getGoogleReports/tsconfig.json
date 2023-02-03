@@ -1,0 +1,26 @@
+{
+  "extends": "./node_modules/gts/tsconfig-google.json",
+  "compilerOptions": {
+    "lib": [
+      "ESNext"
+    ],
+    "types": [
+      "google-apps-script",
+      "jest"
+    ],
+    "noImplicitAny": true,
+    "baseUrl": ".",
+    "rootDir": "src",
+    "outDir": "build",
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "esModuleInterop": true,
+    "target": "es2019",
+    "importHelpers": true
+  },
+  "include": [
+    "src/"
+  ]
+}

@@ -40,12 +40,13 @@ export class SheetInterpreter {
     }
 
     const data = this.retrieveArrayFromSheet(sheet);
-    this.calendarNamesInSheet = data[0].filter((item,i) => item&&i>0);
+    this.calendarNamesInSheet = data[0].filter(i => i);
     this.table = data
-      .map((row, i, sheet) => { // Iterate over the rows; Returns IRoleTable[][]
+      .map((row, i, sheet) => {
+        // Iterates over the rows; Returns IRoleTable[][]
         let acc: IRuleTable = {};
         row.forEach((cell, j) => {
-          // Iterate over the cell for each row.
+          // Iterates over the cell for each row.
           if (i === 0) {
             return;
           } // The first row of each cell is the header. i.e. calendar name.

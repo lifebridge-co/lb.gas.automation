@@ -3,6 +3,8 @@ import { CalendarService } from './services/CalendarService';
 import { SheetInterpreter } from './services/SheetInterpreter';
 import { Log } from './utils/Log';
 import {Drive} from './services/Drive';
+import * as u from './utils/deepEqual';
+const { deepEqual } = u;
 declare const exports: typeof import('./services/CalendarService') &
   typeof import('./services/SheetInterpreter') &
   typeof import('./utils/Log') &
@@ -52,29 +54,14 @@ const main = async () => {
 
   sheetInterpreter.getCalendarNamesInSheet().forEach(calName => {
     try {
-
       const cal = calendarService.getOrCreateCalendarWithName(calName);
       Log.message(`@main calender: ${calName}`);
       const givenRules = sheetInterpreter.getRuleTable();
       Log.log('@main givenRules: %s', { givenRules });
 
       givenRules[calName]?.forEach(rule => {
-        let retry=0, result=undefined;
-        Utilities.sleep(50);
-        while (!result) {
-          try {
-            result = calendarService.createAclRule(cal, rule.mail, rule.role);
-            Log.message(`@main: new rule inserted. ${result.id}, ${result.role}`);
-            break;
-          } catch (e) {
-            if(retry > 5) {throw new Error(`@main: failed to insert acl rule. ${e}`);}
-
-            retry += 1;
-            const wait=1000 * (retry ** 2);
-            Log.message(`@main: err. retry inserting acl in next ${wait/1000} seconds. (retry count:${retry}) ${e}`)
-            Utilities.sleep(wait);
-          }
-        }
+        const result = calendarService.createAclRule(cal, rule.mail, rule.role);
+        Log.log('@main: new rule inserted. %s', { result });
       });
       Log.message(`@main Finished setting: ${calName} (${cal.id})`);
     } catch (err) {
@@ -82,15 +69,23 @@ const main = async () => {
     }
   });
 
-  Log.message('@main: Finished.\n\n============results============');
+  Log.message('@main: Finished.\n\n||============|results|============||');
   calendarService.renew();
   const closingState = calendarService.toJson();
-  Log.message(`intput:`);
-  Log.message(JSON.stringify(sheetInterpreter.getRuleTable()));
-  Log.message(`output:`);
-  Log.logLineByLine(closingState,{lines:10});
-  Log.message(`Calender API call: ${calendarService.getCount()} times`)
-  Drive.saveToDrive(env.DRIVE_FOLDER_ID, `log${new Date().toISOString()}.log`, closingState);
+  const asExpected = deepEqual(initialState, closingState);
+  if (asExpected) {
+    Log.message('@main: SUCCESS.');
+    Log.logLineByLine(closingState, { lines: 6 });
+    Drive.saveToDrive(env.DRIVE_FOLDER_ID, `log${new Date().toISOString()}.log`, closingState);
+  } else {
+    Log.message('@main: ERROR. The result is different from expected');
+    Log.message('intput:');
+    Log.logLineByLine(initialState, { lines: 6 });
+    Log.message('output:');
+    Log.logLineByLine(closingState, { lines: 6 });
+    Drive.saveToDrive(env.DRIVE_FOLDER_ID, `log${new Date().toISOString()}.log`, 'before:\n\n' + initialState+'after:\n\n' + closingState);
+  }
+  Log.message(`Calender API call: ${calendarService.getCount()} times`);
   const time02 = Date.now();
   Log.message(`time: ${(time02 - time01) / 1000}s.`);
 };

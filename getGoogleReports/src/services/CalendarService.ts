@@ -1,13 +1,13 @@
-import {Log} from '../utils/Log';
-import {CreationError, FetchError} from '../utils/Error';
-import {role} from '../types';
+import { Log } from '../utils/Log';
+import { CreationError, FetchError } from '../utils/Error';
+import { role } from '../types';
 declare const exports: typeof import('../utils/Error') & typeof import('../types') & typeof import('../utils/Log');
 exports.Log;
 exports.CreationError;
 exports.FetchError;
 export type Calendar = GoogleAppsScript.Calendar.Calendar;
 export type AclRule = GoogleAppsScript.Calendar.Schema.AclRule;
-export type CalendarWithRules = Calendar & {rules: AclRule[]; name: string; id: string; toString: () => string};
+export type CalendarWithRules = Calendar & { rules: AclRule[]; name: string; id: string; toString: () => string };
 
 /**
  * @class
@@ -30,7 +30,7 @@ export class CalendarService {
     return `{\n${this.calendars
       .map(
         cal =>
-          `\t"${cal.name}":{\n\t\t"id":"${cal.id}",\n\t\t"rules":{${cal.rules
+          `\t"${cal.name}":{\n\t\t"id":"${cal.id}",\n\t\t"rules":{"${cal.rules
             .map(rule => `\n\t\t\t"${rule.scope?.value}":"${rule.role}"`)
             .join(',')}\n\t}`
       )
@@ -147,7 +147,7 @@ export class CalendarService {
       id: `user:${userMailAddress}`,
       kind: 'calendar#aclRule',
       role: 'none',
-      scope: {type: 'user', value: userMailAddress},
+      scope: { type: 'user', value: userMailAddress },
     };
   }
   /**
@@ -217,7 +217,7 @@ export class CalendarService {
     try {
       const calendarId = typeof calendar === 'string' ? calendar : calendar.id;
       const rule = this.getAclRule(calendarId, userMailAddress);
-      if (rule?.role === role) {
+      if (rule?.role === role || (rule == undefined && role === "none")) {
         Log.log(
           '[Notice] @createAclRule; The exact Role already exists: { %s: %s }',
           userMailAddress,
@@ -237,14 +237,14 @@ export class CalendarService {
         if (!newAcl) {
           throw new FetchError(`Failed to create a new ACL rule for ${userMailAddress}`);
         }
-        Log.log('[Info] Success @createAclRule; Acl: %s', {newAcl});
+        Log.log('[Info] Success @createAclRule; Acl: %s', { newAcl });
         return newAcl;
       }
     } catch (err) {
       if (err instanceof Error) {
         throw err;
       } else {
-        throw new Error(JSON.stringify({err}));
+        throw new Error(JSON.stringify({ err }));
       }
     }
   }
