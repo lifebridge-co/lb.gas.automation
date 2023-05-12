@@ -1,6 +1,3 @@
-const basic = 'YOUR_BASIC_AUTH';
-const token = 'YOUR_TOKEN';
-
 /** Yahoo!広告スクリプトにより自動実行される関数 */
 function main() {
   const date = new Date();
@@ -9,15 +6,11 @@ function main() {
   const report = getDisplayAdStats(date);
   Logger.log(JSON.stringify(report));
 
-  for (let offset = 0; offset < report.length; offset += 100) { // 100件ずつ送信(kintone一括登録上限)
-    Utilities.sleep(50); // rate limit避け
-    postToKintone({
-      app: 505,
-      records: report.slice(offset, offset + 100)
-    },
-      basic,
-      token);
-  }
+  MailApp.sendEmail({
+    to: ['tipple5568figure'],
+    subject: 'yahoo display report json',
+    body: JSON.stringify(report),
+  });
 }
 /**
  * 指定された日のディスプレイリスティング情報を都道府県ごとに収集し、kintone用json形式で返す
@@ -64,26 +57,4 @@ function getDisplayAdStats(/** @type Date */date) {
       conversions: { value: report.CONVERSIONS }
     });
   });
-}
-
-/** kintoneにデータを送信 */
-function postToKintone(/** @type {{"app":number,"records":{"date": {"value":string},"platform": {"value":string},"campaign": {"value":string},"campaign_type":{"value":string},"area": { "value":string},"cost": { "value":number},"clicks": { "value":number},"impressions":{"value":number},"conversions":{"value":number}}[]}} */body, basic, token) {
-  const options = {
-    muteHttpExceptions: true, // 200番台以外でも例外にならないようにする
-    method: 'POST',
-    contentType: 'application/json',
-    headers: {
-      'Host': 'lifebridge.cybozu.com:443',
-      'Authorization': basic,
-      'X-Cybozu-API-Token': token,
-    },
-    payload: body,
-  };
-  const resp = UrlFetchApp.fetch('https://lifebridge.cybozu.com/k/v1/records.json', options);
-  if (resp.getResponseCode() < 299) {
-    Logger.log('ok.');
-  } else {
-    Logger.log('oops.');
-  }
-  Logger.log(resp.getContentText());
 }

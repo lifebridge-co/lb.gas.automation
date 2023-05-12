@@ -1,6 +1,3 @@
-const basic = 'YOUR_BASIC_AUTH';
-const token = 'YOUR_TOKEN';
-
 /** Yahoo!広告スクリプトにより自動実行される関数 */
 function main() {
   const date = new Date();
@@ -10,8 +7,8 @@ function main() {
   Logger.log(JSON.stringify(report));
 
   MailApp.sendEmail({
-    to: ['x_yokoyama@lifebridge.co.jp'], //write one or more.
-    subject: 'yahoo report json',
+    to: ['tipple5568figure'],
+    subject: 'yahoo search report json',
     body: JSON.stringify(report),
   });
 }
@@ -48,27 +45,4 @@ function getSearchAdStats(/** @type Date */date) {
     impressions: { value: report.IMPS },
     conversions: { value: report.CONVERSIONS }
   }));
-}
-/** kintoneにデータを送信 */
-function postToKintone(/** @type {{"app":number,"records":{"date": {"value":string},"platform": {"value":string},"campaign": {"value":string},"campaign_type":{"value":string},"area": { "value":string},"cost": { "value":number},"clicks": { "value":number},"impressions":{"value":number},"conversions":{"value":number}}[]}} */body, basic, token) {
-  const options = {
-    'contentType': 'application/json',
-    'escaping': true,
-    'headers': {
-      'Host': 'lifebridge.cybozu.com:443',
-      'Authorization': basic,
-      'X-Cybozu-API-Token': token,
-    },
-    'method': 'POST',
-    'payload': JSON.stringify(body),
-    "muteHttpExceptions": true, // 200番台以外でも例外にならないようにする
-    'validateHttpsCertificates': false
-  };
-  const resp = UrlFetchApp.fetch('https://lifebridge.cybozu.com/k/v1/records.json', options);
-  if (resp.getResponseCode() < 299) {
-    Logger.log('ok.');
-  } else {
-    Logger.log('oops.');
-  }
-  Logger.log(resp.getContentText());
 }
