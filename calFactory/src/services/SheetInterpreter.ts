@@ -1,4 +1,4 @@
-import type {role} from '../types';
+import type {Role} from '../types';
 import {ParameterError, FetchError} from '../utils/Error';
 import {Log} from '../utils/Log';
 declare const exports: typeof import('../utils/Error') & typeof import('../types') & typeof import('../utils/Log');
@@ -11,7 +11,7 @@ export type Sheet = GoogleAppsScript.Spreadsheet.Sheet;
  * A type that represents the data structure of the role table.
  */
 interface IRuleTable {
-  [calendarName: string]: {mail: string; role: role}[];
+  [calendarName: string]: {mail: string; role: Role}[];
 }
 
 /**
@@ -19,11 +19,11 @@ interface IRuleTable {
  * @classdesc Interpreter for GoogleSpreadSheet. Converts the data to string Arrays.
  */
 export class SheetInterpreter {
-  private readonly ROLE_LIST: role[] = ['none', 'freeBusyReader', 'reader', 'writer', 'owner'];
+  private readonly ROLE_LIST: Role[] = ['none', 'freeBusyReader', 'reader', 'writer', 'owner'];
   private table: IRuleTable;
   private calendarNamesInSheet: Array<string>;
 
-  constructor(sheetId: string, sheetName: string, termTable: {[key: string]: role}) {
+  constructor(sheetId: string, sheetName: string, termTable: {[key: string]: Role}) {
     Object.entries(termTable).forEach(([key, value]) => {
       // param check
       if (!this.ROLE_LIST.includes(value)) {
@@ -58,7 +58,7 @@ export class SheetInterpreter {
           const existingRole = acc[calendarName] ?? [];
           acc = {
             ...acc,
-            [calendarName]: [...(existingRole as {mail: string; role: role}[]), {mail: userMail, role: role}],
+            [calendarName]: [...(existingRole as {mail: string; role: Role}[]), {mail: userMail, role: role}],
           };
         });
         return acc;

@@ -8,6 +8,8 @@
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
   },
   "scripts": {
+    "login": "clasp login",
+    "push": "clasp push",
     "build": "npm run compile && npm i -g --loglevel=error --force",
     "build-fresh": "npm cache clean --force && npm i && npm run build",
     "watch": "tsc --project tsconfig.json --watch",

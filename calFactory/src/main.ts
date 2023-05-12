@@ -2,19 +2,17 @@
 import { CalendarService } from './services/CalendarService';
 import { SheetInterpreter } from './services/SheetInterpreter';
 import { Log } from './utils/Log';
-import {Drive} from './services/Drive';
+import { Drive } from './services/Drive';
 declare const exports: typeof import('./services/CalendarService') &
   typeof import('./services/SheetInterpreter') &
   typeof import('./utils/Log') &
-  typeof import('./services/Drive') & typeof deepEqual;
+  typeof import('./services/Drive');
 
 
 exports.CalendarService;
 exports.SheetInterpreter;
 exports.Log;
 exports.Drive;
-// @ts-ignore
-exports.deepEqual;
 /**
  * @file  CalFactory
  * @description a sheet with which the user permissions to set,\
@@ -40,15 +38,17 @@ exports.deepEqual;
  * @license Reserved
  * This script is to used by the person or organization the author acknowledges to do so.
  * 2022-02-12
- * @author Yoshinori Yokoyama (https://github.com/nominalrune)
+ * @author Yoshinori Yokoyama @lb-yokoyama
  */
 const main = async () => {
   const time01 = Date.now();
   const env = Env[Env.mode];
   const sheetInterpreter = new SheetInterpreter(env.SHEET_ID, env.SHEET_NAME, env.TERM_TABLE);
-  const calendarService = new CalendarService();
+  let wait = 300;
 
-  const initialState: string = calendarService.toJson();
+  const calendarService = new CalendarService();
+  Utilities.sleep(wait);
+  // const initialState: string = calendarService.toJson();
 
   sheetInterpreter.getCalendarNamesInSheet().forEach(calName => {
     try {
@@ -59,26 +59,31 @@ const main = async () => {
       Log.log('@main givenRules: %s', { givenRules });
 
       givenRules[calName]?.forEach(rule => {
-        let retry=0, result=undefined;
-        Utilities.sleep(50);
-        while (!result) {
+        let retry = 0, newRule = undefined;
+        while (!newRule && retry < 6) {
           try {
-            result = calendarService.createAclRule(cal, rule.mail, rule.role);
-            Log.message(`@main: new rule inserted. ${result.id}, ${result.role}`);
+            const { rule: _rule, created } = calendarService.createAclRule(cal, rule.mail, rule.role);
+            newRule=_rule;
+            if (created) {
+              Utilities.sleep(wait);
+              Log.message(`@main: new rule inserted. ${newRule.id}, ${newRule.role}`);
+            }
             break;
           } catch (e) {
-            if(retry > 5) {throw new Error(`@main: failed to insert acl rule. ${e}`);}
-
-            retry += 1;
-            const wait=1000 * (retry ** 2);
-            Log.message(`@main: err. retry inserting acl in next ${wait/1000} seconds. (retry count:${retry}) ${e}`)
-            Utilities.sleep(wait);
+            retry++;
+            wait += 500;
+            const waitForRetry = 3000 + 1000 * (retry ** retry);
+            Log.message(`@main: err. retrying to insert acl in next ${waitForRetry / 1000} seconds. (retry count:${retry}) ${e}`)
+            Utilities.sleep(waitForRetry);
           }
         }
+        if (!newRule) throw new Error(`failed to insert acl rule after 5 retries.`);
+
       });
       Log.message(`@main Finished setting: ${calName} (${cal.id})`);
     } catch (err) {
-      Log.log('Error caught @main :%s', { err });
+      Log.log('Error caught @main :%s', err);
+      return;
     }
   });
 
@@ -88,7 +93,7 @@ const main = async () => {
   Log.message(`intput:`);
   Log.message(JSON.stringify(sheetInterpreter.getRuleTable()));
   Log.message(`output:`);
-  Log.logLineByLine(closingState,{lines:10});
+  Log.logLineByLine(closingState, { lines: 10 });
   Log.message(`Calender API call: ${calendarService.getCount()} times`)
   Drive.saveToDrive(env.DRIVE_FOLDER_ID, `log${new Date().toISOString()}.log`, closingState);
   const time02 = Date.now();

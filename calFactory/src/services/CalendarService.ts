@@ -1,13 +1,37 @@
 import {Log} from '../utils/Log';
 import {CreationError, FetchError} from '../utils/Error';
-import {role} from '../types';
+import {Role} from '../types';
 declare const exports: typeof import('../utils/Error') & typeof import('../types') & typeof import('../utils/Log');
 exports.Log;
 exports.CreationError;
 exports.FetchError;
 export type Calendar = GoogleAppsScript.Calendar.Calendar;
 export type AclRule = GoogleAppsScript.Calendar.Schema.AclRule;
-export type CalendarWithRules = Calendar & {rules: AclRule[]; name: string; id: string; toString: () => string};
+export interface CalendarWithRules{rules: AclRule[]; name: string; id: string; toString: () => string};
+// export type CalendarWithRules =  {rules: AclRule[]; name: string; id: string; toString: () => string};
+
+class _Calendar implements CalendarWithRules{
+    rulesCnt:number|undefined;
+    __rules:AclRule[]|undefined;
+    get rules(){
+      if(!this.__rules){
+        this.__rules = Calendar.Acl!.list(this.id).items ?? [];
+        this.rulesCnt = this.__rules.length;
+      }
+      return this.__rules;
+    }
+    name;
+    id ;
+    toString(){
+      return `"calendar": { "name":"${this.name}", "id":"${this.id}" } with ${this.rulesCnt??'?'} rules.`
+    }
+        constructor(calendar: Calendar){
+        this.id = calendar.getId();
+        this.name = calendar.getName();
+        Object.getOwnPropertyNames(calendar)
+        }
+}
+
 
 /**
  * @class
@@ -16,8 +40,8 @@ export type CalendarWithRules = Calendar & {rules: AclRule[]; name: string; id: 
 export class CalendarService {
   private count = 0;
   private calendars: CalendarWithRules[];
-  private calendarToString = (name: string, id: string, ruleCnt: number) => () =>
-    `"calendar": { "name":"${name}", "id":"${id}" } with ${ruleCnt} rules.`;
+  private calendarToString = (name: string, id: string, ruleCnt: number) => () => `"calendar": { "name":"${name}", "id":"${id}" } with ${ruleCnt} rules.`;
+
   constructor() {
     this.calendars = this.fetchAllCalendars();
     Log.log('[Info] A new instance of CalendarService has been created. calendars: %s', this.calendars);
@@ -32,7 +56,7 @@ export class CalendarService {
         cal =>
           `\t"${cal.name}":{\n\t\t"id":"${cal.id}",\n\t\t"rules":{${cal.rules
             .map(rule => `\n\t\t\t"${rule.scope?.value}":"${rule.role}"`)
-            .join(',')}\n\t}`
+            .join(',')}},\n\t}`
       )
       .join(',\n')}\n}`;
   }
@@ -46,15 +70,8 @@ export class CalendarService {
       this.count++;
       const _calendars = CalendarApp.getAllOwnedCalendars()?.map(calendar => {
         this.count++;
-        const calId = calendar.getId();
-        const calName = calendar.getName();
-        const aclItems = Calendar.Acl!.list(calId).items ?? [];
-        return Object.assign(calendar, {
-          rules: aclItems,
-          name: calName,
-          id: calId,
-          toString: this.calendarToString(calName, calId, aclItems.length),
-        });
+        Utilities.sleep(100);
+        return new _Calendar(calendar);
       });
       if (!_calendars?.length) {
         // if undefined or 0.
@@ -116,8 +133,8 @@ export class CalendarService {
    * Get the ACL rule for the specified user
    * @param {string | CalendarWithRules} _calendar The ID of the calendar to which the ACL rule belongs.
    * @param {string} userMailAddress The email address of the target user.
-   * @returns {AclRule | undefined} There's three cases.
-   *  1. When the calendar has a rule for the user (AclRule object), this returns that rule.
+   * @returns {AclRule | undefined} There're three cases.
+   *  1. When the calendar has a rule for the user (AclRule object), returns that rule.
    *  2. When not, it returns the rule (AclRule object) that says the user has no permission.
    *  3. In other case (like the calender is totally new and has no rules for any users), this returns `undefined`.
    */
@@ -159,13 +176,9 @@ export class CalendarService {
   createCalendarWithName(calendarName: string): CalendarWithRules {
     this.count++;
     const _newCalendar = CalendarApp.createCalendar(calendarName);
+    Utilities.sleep(100);
     if (_newCalendar) {
-      const newCalendar = Object.assign(_newCalendar, {
-        rules: [] as AclRule[],
-        name: _newCalendar.getName(),
-        id: _newCalendar.getId(),
-        toString: this.calendarToString(_newCalendar.getName(), _newCalendar.getId(), 0),
-      });
+      const newCalendar =new _Calendar(_newCalendar);
       this.calendars.push(newCalendar);
       Log.log('[Info] Success @setNewCalendar; Calendar: %s', newCalendar);
       return newCalendar;
@@ -207,13 +220,13 @@ export class CalendarService {
    * Creates a new ACL rule for a user when the same rule doesn't exist.
    * @param {string|CalendarWithRules} calendar - The Calendar object or calendarId to which the rule to insert.
    * @param {string} userMailAddress - The email address of the user to add to the ACL.
-   * @param {role} role - The role of the user.
+   * @param {Role} role - The role of the user.
    * @returns {AclRule} The new ACL rule.
    * @throws {FetchError} If failed to create a new ACL rule.
    * @throws {Error} If other error occurred.
    *
    */
-  createAclRule(calendar: string | CalendarWithRules, userMailAddress: string, role: role): AclRule {
+  createAclRule(calendar: string | CalendarWithRules, userMailAddress: string, role: Role): {rule:AclRule,created:boolean} {
     try {
       const calendarId = typeof calendar === 'string' ? calendar : calendar.id;
       const rule = this.getAclRule(calendarId, userMailAddress);
@@ -223,7 +236,7 @@ export class CalendarService {
           userMailAddress,
           JSON.stringify(role)
         );
-        return rule;
+        return {rule, created: false};
       } else {
         const aclParam = {
           scope: {
@@ -238,7 +251,7 @@ export class CalendarService {
           throw new FetchError(`Failed to create a new ACL rule for ${userMailAddress}`);
         }
         Log.log('[Info] Success @createAclRule; Acl: %s', {newAcl});
-        return newAcl;
+        return {rule:newAcl, created: true};
       }
     } catch (err) {
       if (err instanceof Error) {

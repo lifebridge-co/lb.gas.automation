@@ -9,6 +9,7 @@ yarn-error.log*
 *.lock
 *lock.yaml
 
+.secret
 build
 coverage
 node_modules

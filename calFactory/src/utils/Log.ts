@@ -22,6 +22,9 @@ export class Log {
     } else if (this.logLevel === 'error' && this.isErrorMessage(message)) {
       this.logger.log(message, ...targets);
     }
+    // else {
+    //   this.logger.log(message, ...targets);
+    // }
   }
 
   /**
