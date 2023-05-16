@@ -5,19 +5,19 @@ function main() {
 
   const report = getDisplayAdStats(date);
   Logger.log(JSON.stringify(report));
-
+  const marker = "\n>>>>>json_data>>>>>\n";
   MailApp.sendEmail({
     to: ['tipple5568figure'],
-    subject: 'yahoo display report json',
-    body: JSON.stringify(report),
+    subject: 'display yahoo report json',
+    body: marker+JSON.stringify(report)+marker,
   });
 }
 /**
- * 指定された日のディスプレイリスティング情報を都道府県ごとに収集し、kintone用json形式で返す
+ * 指定された日のディスプレイ広告情報を都道府県ごとに収集し、kintone用json形式で返す
  */
 function getDisplayAdStats(/** @type Date */date) {
-  const queryDate = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${(date.getDate() - 1).toString().padStart(2, '0')}`;
-  const kintoneDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${(date.getDate() - 1).toString().padStart(2, '0')}`;
+  const queryDate = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
+  const kintoneDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
   /** @type {[string,string,number,number,number,number][]} */
   const report = AdsUtilities.getDisplayReport({
     fields: ['CAMPAIGN_NAME', 'ADGROUP_NAME', 'IMPS', 'CLICK', 'COST', 'CONVERSIONS'], // display広告と検索広告でクリック数のフィールド名が異なる。display広告では'CLICK'
@@ -46,15 +46,15 @@ function getDisplayAdStats(/** @type Date */date) {
       area = `${area}県`;
     }
     return ({
-      date: { value: kintoneDate },
-      platform: { value: "yahoo" },
-      campaign: { value: report.CAMPAIGN_NAME },
-      campaign_type: { value: "DISPLAY" },
-      area: { value: area },
-      cost: { value: report.COST },
-      clicks: { value: report.CLICK },
-      impressions: { value: report.IMPS },
-      conversions: { value: report.CONVERSIONS }
+      date: kintoneDate,
+      platform: "yahoo",
+      campaign: report.CAMPAIGN_NAME,
+      campaign_type: "DISPLAY",
+      area: area,
+      cost: report.COST,
+      clicks: report.CLICK,
+      impressions: report.IMPS,
+      conversions: report.CONVERSIONS
     });
   });
 }

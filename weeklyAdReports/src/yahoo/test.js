@@ -20,4 +20,18 @@ function main() {
     Logger.log('oops.');
   }
   Logger.log(resp.getContentText());
+
+  const date = new Date();
+  date.setDate(date.getDate() - 1);
+
+  const report = getSearchAdStats(date);
+  for (let offset = 0; offset < report.length; offset += 100) { // 100件ずつ送信(kintone一括登録上限)
+  Utilities.sleep(50); // rate limit避け
+  postToKintone({
+    app: 505,
+    records: report.slice(offset, offset + 100)
+  },
+    basic,
+    token);
+}
 }

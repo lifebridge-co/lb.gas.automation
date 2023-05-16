@@ -5,10 +5,10 @@ function main() {
   /** @type {[{"date": {"value":string},"platform": {"value":string},"campaign": {"value":string},"campaign_type":{"value":string},"area": { "value":string},"cost": { "value":number},"clicks": { "value":number},"impressions":{"value":number},"conversions":{"value":number}}]} */
   const dataCollection = [];
   const now = new Date();
-  const date = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${(now.getDate() - 1).toString().padStart(2, '0')}`;
+  const yesterday = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${(now.getDate()).toString().padStart(2, '0')}`; // NOTE なぜか昨日の日付になります（UTCというわけでもない）
 
-  dataCollection.push(...getAllPrefStats(date));
-  dataCollection.push(...getAllNationalStats(date));
+  dataCollection.push(...getAllPrefStats(yesterday));
+  dataCollection.push(...getAllNationalStats(yesterday));
 
   for (let offset = 0; offset < dataCollection.length; offset += 100) { // 100件ずつ送信(kintone一括登録上限)
     Utilities.sleep(50); // rate limit避け
