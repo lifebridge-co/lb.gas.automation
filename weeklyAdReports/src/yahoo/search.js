@@ -23,7 +23,7 @@ function getSearchAdStats(/** @type Date */date) {
   const report = AdsUtilities.getSearchReport({
     accountId,
     fields: ['CAMPAIGN_NAME', 'IMPS', 'CLICKS', 'COST', 'CONVERSIONS'], // display広告と検索広告でクリック数のフィールド名が異なる。検索広告では'CLICKS'。
-    filters: [{ field: 'COST', filterOperator: 'GREATER_THAN', values: ['0'] }],
+    filters: [{ field: 'IMPS', filterOperator: 'GREATER_THAN', values: ['0'] }],
     reportDateRangeType: 'CUSTOM_DATE',
     dateRange: { startDate: queryDate, endDate: queryDate },
     reportType: 'CAMPAIGN',

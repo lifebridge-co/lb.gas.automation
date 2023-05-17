@@ -74,7 +74,7 @@ function getNationalStats(campaign, date) {
   /** @type {{"date": {"value":string},"platform": {"value":string},"campaign": {"value":string},"campaign_type":{"value":string},"area": { "value":string},"cost": { "value":number},"clicks": { "value":number},"impressions":{"value":number},"conversions":{"value":number}}[]} */
   const stats = [];
   for ( // 都道府県別の情報収集（名前ありの場所）
-    const location of campaign.targeting().targetedLocations().forDateRange(_date, _date).withCondition("metrics.cost_micros > 0").get()
+    const location of campaign.targeting().targetedLocations().forDateRange(_date, _date).withCondition("metrics.impressions > 0").get()
   ) {
     const _stat = location.getStatsFor(_date, _date);
     const locationId = location.getId();
@@ -92,7 +92,7 @@ function getNationalStats(campaign, date) {
     });
   }
   for ( // 都道府県別の情報収集（緯度経度指定の場所）
-    const location of campaign.targeting().targetedProximities().forDateRange(_date, _date).withCondition("metrics.cost_micros > 0").get()
+    const location of campaign.targeting().targetedProximities().forDateRange(_date, _date).withCondition("metrics.impressions > 0").get()
   ) {
     const _stat = location.getStatsFor(_date, _date);
     const latLon = `${location.getLatitude()},${location.getLongitude()}`;

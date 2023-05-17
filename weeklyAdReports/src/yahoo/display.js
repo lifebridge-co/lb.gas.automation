@@ -21,7 +21,7 @@ function getDisplayAdStats(/** @type Date */date) {
   /** @type {[string,string,number,number,number,number][]} */
   const report = AdsUtilities.getDisplayReport({
     fields: ['CAMPAIGN_NAME', 'ADGROUP_NAME', 'IMPS', 'CLICK', 'COST', 'CONVERSIONS'], // display広告と検索広告でクリック数のフィールド名が異なる。display広告では'CLICK'
-    filters: [{ field: 'COST', filterOperator: 'GREATER_THAN', values: ['0'] }],
+    filters: [{ field: 'IMPS', filterOperator: 'GREATER_THAN', values: ['0'] }],
     reportDateRangeType: 'CUSTOM_DATE',
     dateRange: { startDate: queryDate, endDate: queryDate },
   }).reports[0].rows;
