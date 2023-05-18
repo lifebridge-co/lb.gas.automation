@@ -38,7 +38,7 @@ function getSearchAdStats(/** @type Date */date) {
     date: kintoneDate,
     platform: "yahoo",
     campaign: report.CAMPAIGN_NAME,
-    campaign_type: "SEARCH",
+    campaign_type: "都道府県別リスティング",
     area: (/\d\d_(.{2,3}[県府都道])リスティング/.exec(report.CAMPAIGN_NAME) || ["", ""])[1], // ランタイムV202302はオプショナルチェイニングが使えない
     cost: report.COST,
     clicks: report.CLICKS,

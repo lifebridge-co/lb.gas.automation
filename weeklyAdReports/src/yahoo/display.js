@@ -49,7 +49,7 @@ function getDisplayAdStats(/** @type Date */date) {
       date: kintoneDate,
       platform: "yahoo",
       campaign: report.CAMPAIGN_NAME,
-      campaign_type: "DISPLAY",
+      campaign_type: "全国リスティング",
       area: area,
       cost: report.COST,
       clicks: report.CLICK,

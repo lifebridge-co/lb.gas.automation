@@ -9,6 +9,7 @@ function main() {
 
   dataCollection.push(...getAllPrefStats(yesterday));
   dataCollection.push(...getAllNationalStats(yesterday));
+  dataCollection.push(...getAllYoutubeStats(yesterday));
 
   for (let offset = 0; offset < dataCollection.length; offset += 100) { // 100件ずつ送信(kintone一括登録上限)
     Utilities.sleep(50); // rate limit避け
@@ -46,7 +47,7 @@ function getPrefStats(campaign, date) {
     date: { value: date },
     platform: { value: "google" },
     campaign: { value: name },
-    campaign_type: { value: "SEARCH" },
+    campaign_type: { value: "都道府県別リスティング" },
     area: { value: area },
     cost: { value: _stat.getCost() },
     clicks: { value: _stat.getClicks() },
@@ -83,7 +84,7 @@ function getNationalStats(campaign, date) {
       date: { value: date },
       platform: { value: "google" },
       campaign: { value: campaign.getName() },
-      campaign_type: { value: location.getCampaignType() },
+      campaign_type: { value: "全国リスティング" },
       area: { value: area },
       cost: { value: _stat.getCost() },
       clicks: { value: _stat.getClicks() },
@@ -101,7 +102,64 @@ function getNationalStats(campaign, date) {
       date: { value: date },
       platform: { value: "google" },
       campaign: { value: campaign.getName() },
-      campaign_type: { value: location.getCampaignType() },
+      campaign_type: { value: "全国リスティング" },
+      area: { value: area },
+      cost: { value: _stat.getCost() },
+      clicks: { value: _stat.getClicks() },
+      impressions: { value: _stat.getImpressions() },
+      conversions: { value: _stat.getConversions() }
+    });
+  }
+  return stats;
+}
+/** Youtube広告の情報収集
+ */
+function getAllYoutubeStats(date) {
+  /** @type {{"date": {"value":string},"platform": {"value":string},"campaign": {"value":string},"campaign_type":{"value":string},"area": { "value":string},"cost": { "value":number},"clicks": { "value":number},"impressions":{"value":number},"conversions":{"value":number}}[]} */
+  const dataCollection = [];
+  for (
+    const campaign of AdsApp.videoCampaigns()
+      .withCondition("campaign.name REGEXP_MATCH 'YoutubeTVR.*'")
+      .withCondition("campaign.status = ENABLED")
+      .get()
+  ) {
+    dataCollection.push(...getYoutubeStats(campaign, date));
+  }
+  return dataCollection;
+}
+function getYoutubeStats(campaign, date) {
+  const _date = date.replaceAll("-", "");
+  /** @type {{"date": {"value":string},"platform": {"value":string},"campaign": {"value":string},"campaign_type":{"value":string},"area": { "value":string},"cost": { "value":number},"clicks": { "value":number},"impressions":{"value":number},"conversions":{"value":number}}[]} */
+  const stats = [];
+  for ( // 都道府県別の情報収集（名前ありの場所）
+    const location of campaign.targeting().targetedLocations().forDateRange(_date, _date).withCondition("metrics.impressions > 0").get()
+  ) {
+    const _stat = location.getStatsFor(_date, _date);
+    const locationId = location.getId();
+    const area = GeoTargets?.[locationId] ?? "不明(" + locationId + ")";
+    stats.push({
+      date: { value: date },
+      platform: { value: "google" },
+      campaign: { value: campaign.getName() },
+      campaign_type: { value: "Youtube" },
+      area: { value: area },
+      cost: { value: _stat.getCost() },
+      clicks: { value: _stat.getClicks() },
+      impressions: { value: _stat.getImpressions() },
+      conversions: { value: _stat.getConversions() }
+    });
+  }
+  for ( // 都道府県別の情報収集（緯度経度指定の場所）
+    const location of campaign.targeting().targetedProximities().forDateRange(_date, _date).withCondition("metrics.impressions > 0").get()
+  ) {
+    const _stat = location.getStatsFor(_date, _date);
+    const latLon = `${location.getLatitude()},${location.getLongitude()}`;
+    const area = Proximities?.[latLon] ?? "不明(" + latLon + ")";
+    stats.push({
+      date: { value: date },
+      platform: { value: "google" },
+      campaign: { value: campaign.getName() },
+      campaign_type: { value: "Youtube" },
       area: { value: area },
       cost: { value: _stat.getCost() },
       clicks: { value: _stat.getClicks() },
